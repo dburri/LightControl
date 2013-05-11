@@ -6,7 +6,9 @@ import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.zip.Inflater;
 
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
@@ -15,9 +17,16 @@ import android.os.Bundle;
 import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
@@ -34,13 +43,46 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
-		textChannel = (EditText) findViewById(R.id.editText1);
-		textChannelName = (TextView) findViewById(R.id.textView1);
-		textChannelValue = (TextView) findViewById(R.id.textView2);
+		setContentView(R.layout.overview);
+		
+		
+		// fill overview with content
+		ArrayList<ViewItem> your_array_list = new ArrayList<ViewItem>();
+		
+        your_array_list.add(new ViewItem("System (SY)", 0));
+        your_array_list.add(new ViewItem("DMX-Channel (DC)", 1));
+        your_array_list.add(new ViewItem("TEST", 99));
+        
+		ArrayAdapter<ViewItem> adapter = new ArrayAdapter<ViewItem>(this, android.R.layout.simple_list_item_1, your_array_list);
+		ListView listView = (ListView) findViewById(R.id.AvailableViewsList);
+		listView.setAdapter(adapter);
+		
+		
+		// Create a message handling object as an anonymous class.
+		OnItemClickListener mMessageClickedHandler = new OnItemClickListener() {
+			@SuppressWarnings("rawtypes")
+			@Override
+			public void onItemClick(AdapterView parent, View v, int position, long id) {
+				Log.v(LOG_TAG, "item clicked, position = " + position + ", id = " + id);
+				
+//				LayoutInflater inflater = (LayoutInflater)getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+//				View view = inflater.inflate(R.id.DebugLayout, null);
+//				Animation hyperspaceJumpAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.standard_transition);
+//				view.startAnimation(hyperspaceJumpAnimation);
+				
+			}
+		};
 
-		barChannelValue = (SeekBar) findViewById(R.id.seekBar1);
-		barChannelValue.setOnSeekBarChangeListener(this);
+		listView.setOnItemClickListener(mMessageClickedHandler); 
+		
+		
+		
+		//textChannel = (EditText) findViewById(R.id.editText1);
+		//textChannelName = (TextView) findViewById(R.id.textView1);
+		//textChannelValue = (TextView) findViewById(R.id.textView2);
+
+		//barChannelValue = (SeekBar) findViewById(R.id.seekBar1);
+		//barChannelValue.setOnSeekBarChangeListener(this);
 	}
 
 	@Override
