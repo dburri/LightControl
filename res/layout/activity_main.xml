@@ -3,8 +3,7 @@
     android:id="@+id/DebugLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center_vertical|top"
-    android:onClick="refreshIP"
+    android:gravity="center_vertical|top|left"
     android:orientation="vertical"
     tools:context=".MainActivity" >
 
@@ -27,9 +26,8 @@
             android:id="@+id/button1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:onClick="setChannel"
+            android:onClick="onSetChannel"
             android:text="@string/submit" />
-
     </LinearLayout>
 
     <TextView
@@ -50,5 +48,30 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="TextView" />
+
+    <ProgressBar
+        android:id="@+id/progressBar1"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <EditText
+        android:id="@+id/editText2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0.79"
+        android:ems="10"
+        android:inputType="textMultiLine"
+        android:scrollbars="vertical" >
+
+        <requestFocus />
+    </EditText>
+
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="onScanChannels"
+        android:text="Button" />
 
 </LinearLayout>

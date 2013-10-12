@@ -1,40 +1,30 @@
 package ch.pfimi.apps.lightcontrol;
 
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.zip.Inflater;
+import java.util.List;
 
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
+import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.app.Activity;
-import android.content.Context;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
+import ch.pfimi.apps.lightcontrol.beans.AsyncJob;
+import ch.pfimi.apps.lightcontrol.beans.ChannelScan;
+import ch.pfimi.apps.lightcontrol.beans.SetChannelJob;
+import ch.pfimi.apps.lightcontrol.beans.SetValueJob;
 
 public class MainActivity extends Activity implements OnSeekBarChangeListener {
 
 	private static final String LOG_TAG = "MainController";
 
+	private EditText textChannelSearch;
 	private EditText textChannel;
 	private TextView textChannelName;
 	private TextView textChannelValue;
@@ -43,46 +33,52 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.overview);
-		
-		
-		// fill overview with content
-		ArrayList<ViewItem> your_array_list = new ArrayList<ViewItem>();
-		
-        your_array_list.add(new ViewItem("System (SY)", 0));
-        your_array_list.add(new ViewItem("DMX-Channel (DC)", 1));
-        your_array_list.add(new ViewItem("TEST", 99));
-        
-		ArrayAdapter<ViewItem> adapter = new ArrayAdapter<ViewItem>(this, android.R.layout.simple_list_item_1, your_array_list);
-		ListView listView = (ListView) findViewById(R.id.AvailableViewsList);
-		listView.setAdapter(adapter);
-		
-		
-		// Create a message handling object as an anonymous class.
-		OnItemClickListener mMessageClickedHandler = new OnItemClickListener() {
-			@SuppressWarnings("rawtypes")
-			@Override
-			public void onItemClick(AdapterView parent, View v, int position, long id) {
-				Log.v(LOG_TAG, "item clicked, position = " + position + ", id = " + id);
-				
-//				LayoutInflater inflater = (LayoutInflater)getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-//				View view = inflater.inflate(R.id.DebugLayout, null);
-//				Animation hyperspaceJumpAnimation = AnimationUtils.loadAnimation(getApplicationContext(), R.anim.standard_transition);
-//				view.startAnimation(hyperspaceJumpAnimation);
-				
-			}
-		};
+		setContentView(R.layout.activity_main);
 
-		listView.setOnItemClickListener(mMessageClickedHandler); 
-		
-		
-		
-		//textChannel = (EditText) findViewById(R.id.editText1);
-		//textChannelName = (TextView) findViewById(R.id.textView1);
-		//textChannelValue = (TextView) findViewById(R.id.textView2);
+		// // fill overview with content
+		// ArrayList<ViewItem> your_array_list = new ArrayList<ViewItem>();
+		//
+		// your_array_list.add(new ViewItem("System (SY)", 0));
+		// your_array_list.add(new ViewItem("DMX-Channel (DC)", 1));
+		// your_array_list.add(new ViewItem("TEST", 99));
+		//
+		// ArrayAdapter<ViewItem> adapter = new ArrayAdapter<ViewItem>(this,
+		// android.R.layout.simple_list_item_1, your_array_list);
+		// ListView listView = (ListView) findViewById(R.id.AvailableViewsList);
+		// listView.setAdapter(adapter);
+		//
+		// // Create a message handling object as an anonymous class.
+		// OnItemClickListener mMessageClickedHandler = new
+		// OnItemClickListener() {
+		// @SuppressWarnings("rawtypes")
+		// @Override
+		// public void onItemClick(AdapterView parent, View v, int position,
+		// long id) {
+		// Log.v(LOG_TAG, "item clicked, position = " + position
+		// + ", id = " + id);
+		//
+		// // LayoutInflater inflater =
+		// //
+		// (LayoutInflater)getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		// // View view = inflater.inflate(R.id.DebugLayout, null);
+		// // Animation hyperspaceJumpAnimation =
+		// // AnimationUtils.loadAnimation(getApplicationContext(),
+		// // R.anim.standard_transition);
+		// // view.startAnimation(hyperspaceJumpAnimation);
+		//
+		// }
+		// };
+		//
+		// listView.setOnItemClickListener(mMessageClickedHandler);
 
-		//barChannelValue = (SeekBar) findViewById(R.id.seekBar1);
-		//barChannelValue.setOnSeekBarChangeListener(this);
+		textChannel = (EditText) findViewById(R.id.editText1);
+		textChannelName = (TextView) findViewById(R.id.textView1);
+		textChannelValue = (TextView) findViewById(R.id.textView2);
+
+		textChannelSearch = (EditText) findViewById(R.id.editText2);
+
+		barChannelValue = (SeekBar) findViewById(R.id.seekBar1);
+		barChannelValue.setOnSeekBarChangeListener(this);
 	}
 
 	@Override
@@ -92,21 +88,29 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 		return true;
 	}
 
-	public void setChannel(View view) {
+	public void onScanChannels(View view) {
+
+		// create jobs
+		ChannelScan channelScan = new ChannelScan(this, 1, 100);
+
+		StringBuilder sb = new StringBuilder();
+		// sb.append(i + ": " + "\n");
+		textChannelSearch.setText(sb.toString());
+	}
+
+	public void onSetChannel(View view) {
 		String ch = textChannel.getText().toString();
-		Log.v(LOG_TAG, "channel = " + ch);
 		Integer channel = Integer.parseInt(ch);
-		new Controller().execute(0, channel);
+		Log.v(LOG_TAG, "channel = " + channel);
+		setChannel(channel);
 	}
 
 	@Override
 	public void onProgressChanged(SeekBar seekBar, int progress,
 			boolean fromUser) {
-		// TODO Auto-generated method stub
-
-		// change progress text label with current seekbar value
+		Log.v(LOG_TAG, "Value = " + progress);
 		textChannelValue.setText("Value: " + progress);
-		new Controller().execute(1, progress);
+		setValue(progress);
 	}
 
 	@Override
@@ -121,30 +125,55 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 
 	}
 
+	public void setChannel(Integer channel) {
+		SetChannelJob asyncJob = new SetChannelJob(this, channel);
+		new Controller().execute(asyncJob);
+	}
+
+	public void setValue(Integer value) {
+		SetValueJob asyncJob = new SetValueJob(this, value);
+		new Controller().execute(asyncJob);
+	}
+
 	// AsyncTask
-	private class Controller extends AsyncTask {
+	private class Controller extends
+			AsyncTask<AsyncJob, String, List<AsyncJob>> {
 
 		@Override
-		protected Object doInBackground(Object... arg0) {
-			if ((Integer) arg0[0] == 0) {
-				Integer channel = (Integer) arg0[1];
-				setChannel(channel);
-			} else if ((Integer) arg0[0] == 1) {
-				Integer value = (Integer) arg0[1];
-				setValue(value);
+		protected List<AsyncJob> doInBackground(AsyncJob... asyncJobs) {
+
+			List<AsyncJob> asyncJobResults = new ArrayList<AsyncJob>();
+			for (AsyncJob asyncJob : asyncJobs) {
+				asyncJobResults.add(executeAsyncJob(asyncJob));
 			}
-			return null;
+
+			return asyncJobResults;
 		}
 
 		// onPostExecute displays the results of the AsyncTask.
 		@Override
-		protected void onPostExecute(Object result) {
+		protected void onPostExecute(List<AsyncJob> result) {
+
+			for (AsyncJob asyncJob : result) {
+				asyncJob.onJobDone();
+			}
 			Log.v(LOG_TAG, "finished");
 		}
 
-		public void setChannel(int channel) {
+		private AsyncJob executeAsyncJob(AsyncJob asyncJob) {
+			if (asyncJob.getJobType() == AsyncJob.JobType.SET_CHANNEL) {
+				String result = setChannel(asyncJob.getChannel());
+				asyncJob.setResult(result);
+			} else if (asyncJob.getJobType() == AsyncJob.JobType.SET_VALUE) {
+				setValue(asyncJob.getValue());
+			}
+			return asyncJob;
+		}
+
+		private String setChannel(int channel) {
 
 			Log.v(LOG_TAG, "Setzte Kanal " + channel);
+			String channelName = "";
 
 			TcAdsSOAP tcSoap = new TcAdsSOAP(
 					"http://192.168.34.1/TcAdsWebService/TcAdsWebService.dll");
@@ -184,20 +213,20 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 						0x4020, 102)));
 
 				/* read string */
-				String channelName = tcSoap.ReadString(netId, port, 0x4020,
-						110, 80);
+				channelName = tcSoap.ReadString(netId, port, 0x4020, 110, 80);
 				Log.v(LOG_TAG, channelName);
-				textChannelName.setText(channelName);
 
 			} catch (Exception ex) {
 				Log.v(LOG_TAG, String.valueOf(ex));
 				ex.printStackTrace();
+				channelName = "Could not set channel!";
 			}
 
 			Log.v(LOG_TAG, "finished...");
+			return channelName;
 		}
 
-		public void setValue(Integer value) {
+		private void setValue(Integer value) {
 
 			Log.v(LOG_TAG, "Set value " + value);
 
