@@ -1,10 +1,5 @@
 package ch.pfimi.apps.lightcontrol;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.List;
-
 import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -15,10 +10,6 @@ import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
-import ch.pfimi.apps.lightcontrol.beans.AsyncJob;
-import ch.pfimi.apps.lightcontrol.beans.ChannelScan;
-import ch.pfimi.apps.lightcontrol.beans.SetChannelJob;
-import ch.pfimi.apps.lightcontrol.beans.SetValueJob;
 
 public class MainActivity extends Activity implements OnSeekBarChangeListener {
 
@@ -90,19 +81,32 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 
 	public void onScanChannels(View view) {
 
-		// create jobs
-		ChannelScan channelScan = new ChannelScan(this, 1, 100);
+		textChannelSearch.setText("");
 
-		StringBuilder sb = new StringBuilder();
+		Integer channelFrom = 1;
+		Integer channelTo = 100;
+		Integer[] channelsToScan = new Integer[channelTo - channelFrom];
+		for (int i = 0; i < channelTo - channelFrom; ++i) {
+			channelsToScan[i] = channelFrom + i;
+		}
+
+		new ScanChannelAsync().execute(channelsToScan);
+
+		// StringBuilder sb = new StringBuilder();
+		// for (int i = 0; i < 100; ++i) {
 		// sb.append(i + ": " + "\n");
-		textChannelSearch.setText(sb.toString());
+		// }
+		// textChannelSearch.setText(sb.toString());
 	}
 
 	public void onSetChannel(View view) {
 		String ch = textChannel.getText().toString();
-		Integer channel = Integer.parseInt(ch);
-		Log.v(LOG_TAG, "channel = " + channel);
-		setChannel(channel);
+		try {
+			Integer channel = Integer.parseInt(ch);
+			Log.v(LOG_TAG, "channel = " + channel);
+			setChannel(channel);
+		} catch (Exception e) {
+		}
 	}
 
 	@Override
@@ -116,152 +120,83 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 	@Override
 	public void onStartTrackingTouch(SeekBar arg0) {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void onStopTrackingTouch(SeekBar arg0) {
 		// TODO Auto-generated method stub
-
 	}
 
 	public void setChannel(Integer channel) {
-		SetChannelJob asyncJob = new SetChannelJob(this, channel);
-		new Controller().execute(asyncJob);
+		new SetChannelAsync().execute(channel);
 	}
 
 	public void setValue(Integer value) {
-		SetValueJob asyncJob = new SetValueJob(this, value);
-		new Controller().execute(asyncJob);
+		new SetValueAsync().execute(value);
 	}
 
 	// AsyncTask
-	private class Controller extends
-			AsyncTask<AsyncJob, String, List<AsyncJob>> {
+	private class SetChannelAsync extends AsyncTask<Integer, String, String> {
 
 		@Override
-		protected List<AsyncJob> doInBackground(AsyncJob... asyncJobs) {
-
-			List<AsyncJob> asyncJobResults = new ArrayList<AsyncJob>();
-			for (AsyncJob asyncJob : asyncJobs) {
-				asyncJobResults.add(executeAsyncJob(asyncJob));
+		protected String doInBackground(Integer... channels) {
+			String result = "";
+			for (Integer channel : channels) {
+				result = Controller.setChannel(channel);
 			}
-
-			return asyncJobResults;
+			return result;
 		}
 
 		// onPostExecute displays the results of the AsyncTask.
 		@Override
-		protected void onPostExecute(List<AsyncJob> result) {
+		protected void onPostExecute(String result) {
+			textChannelName.setText(result);
+			Log.v(LOG_TAG, "Finished setting channel: " + result);
+		}
+	}
 
-			for (AsyncJob asyncJob : result) {
-				asyncJob.onJobDone();
+	// AsyncTask
+	private class SetValueAsync extends AsyncTask<Integer, String, String> {
+
+		@Override
+		protected String doInBackground(Integer... values) {
+			String result = "";
+			for (Integer value : values) {
+				result = Controller.setValue(value);
 			}
-			Log.v(LOG_TAG, "finished");
+			return result;
 		}
 
-		private AsyncJob executeAsyncJob(AsyncJob asyncJob) {
-			if (asyncJob.getJobType() == AsyncJob.JobType.SET_CHANNEL) {
-				String result = setChannel(asyncJob.getChannel());
-				asyncJob.setResult(result);
-			} else if (asyncJob.getJobType() == AsyncJob.JobType.SET_VALUE) {
-				setValue(asyncJob.getValue());
+		// onPostExecute displays the results of the AsyncTask.
+		@Override
+		protected void onPostExecute(String result) {
+			Log.v(LOG_TAG, "Finished setting value");
+		}
+	}
+
+	// AsyncTask
+	private class ScanChannelAsync extends AsyncTask<Integer, String, String> {
+
+		@Override
+		protected String doInBackground(Integer... channels) {
+			String result = "";
+			for (Integer channel : channels) {
+				result = Controller.setChannel(channel);
+				publishProgress(channel + ": " + result);
+
 			}
-			return asyncJob;
+			return result;
 		}
 
-		private String setChannel(int channel) {
-
-			Log.v(LOG_TAG, "Setzte Kanal " + channel);
-			String channelName = "";
-
-			TcAdsSOAP tcSoap = new TcAdsSOAP(
-					"http://192.168.34.1/TcAdsWebService/TcAdsWebService.dll");
-			try {
-				String netId = "5.16.167.210.1.1";
-				int port = 801;
-
-				// GroupIndex
-				// 0x4020 = READ_M, WRITE_M, Offset = byteadresse
-				// 0x4021 = READ_MX, WRITE_MX, Offset = bitadresse
-
-				Log.v(LOG_TAG, "connect to: netId = " + netId + ", port = "
-						+ port);
-
-				/* write int */
-				if (tcSoap.WriteInt(netId, port, 0x4020, 102, channel)) {
-					Log.v(LOG_TAG, "Integer " + channel + " Written");
-				} else {
-					StringWriter sw = new StringWriter();
-					PrintWriter pw = new PrintWriter(sw);
-					tcSoap.getError().printStackTrace(pw);
-					sw.toString();
-					Log.v(LOG_TAG, "Error: " + sw);
-				}
-
-				// /* write string */
-				// String testString = "HHHello Automation";
-				// if (tcSoap.WriteString(netId, port, 0x4020, 200, testString))
-				// Log.v(LOG_TAG, "String " + testString + " Written");
-
-				// /* read bool */
-				// boolean value = tcSoap.ReadBool(netId,port,16417,800);
-				// Log.v(LOG_TAG, "Boolean " + value + " read");
-
-				/* read int */
-				Log.v(LOG_TAG, String.valueOf(tcSoap.ReadInt(netId, port,
-						0x4020, 102)));
-
-				/* read string */
-				channelName = tcSoap.ReadString(netId, port, 0x4020, 110, 80);
-				Log.v(LOG_TAG, channelName);
-
-			} catch (Exception ex) {
-				Log.v(LOG_TAG, String.valueOf(ex));
-				ex.printStackTrace();
-				channelName = "Could not set channel!";
-			}
-
-			Log.v(LOG_TAG, "finished...");
-			return channelName;
+		protected void onProgressUpdate(String... values) {
+			textChannelSearch.append(values[0] + "\n");
 		}
 
-		private void setValue(Integer value) {
-
-			Log.v(LOG_TAG, "Set value " + value);
-
-			TcAdsSOAP tcSoap = new TcAdsSOAP(
-					"http://192.168.34.1/TcAdsWebService/TcAdsWebService.dll");
-			try {
-				String netId = "5.16.167.210.1.1";
-				int port = 801;
-
-				// GroupIndex
-				// 0x4020 = READ_M, WRITE_M, Offset = byteadresse
-				// 0x4021 = READ_MX, WRITE_MX, Offset = bitadresse
-
-				Log.v(LOG_TAG, "connect to: netId = " + netId + ", port = "
-						+ port);
-
-				/* write byte */
-				if (tcSoap.WriteInt(netId, port, 0x4020, 100, value)) {
-					Log.v(LOG_TAG, "Integer " + value + " Written");
-				} else {
-					StringWriter sw = new StringWriter();
-					PrintWriter pw = new PrintWriter(sw);
-					tcSoap.getError().printStackTrace(pw);
-					sw.toString();
-					Log.v(LOG_TAG, "Error: " + sw);
-				}
-
-			} catch (Exception ex) {
-				Log.v(LOG_TAG, String.valueOf(ex));
-				ex.printStackTrace();
-			}
-
-			Log.v(LOG_TAG, "finished...");
+		// onPostExecute displays the results of the AsyncTask.
+		@Override
+		protected void onPostExecute(String result) {
+			Log.v(LOG_TAG, "Finished setting value");
 		}
-
 	}
 
 }
