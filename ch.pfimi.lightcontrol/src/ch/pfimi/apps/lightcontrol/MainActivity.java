@@ -1,12 +1,18 @@
 package ch.pfimi.apps.lightcontrol;
 
+import org.apache.commons.lang3.StringUtils;
+
+import ch.pfimi.apps.lightcontrol.beans.Channel;
 import android.app.Activity;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
@@ -20,6 +26,14 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 	private TextView textChannelName;
 	private TextView textChannelValue;
 	private SeekBar barChannelValue = null;
+	private Button buttonSetChannel;
+	private RadioButton radioButtonDMX;
+	private RadioButton radioButtonControl;
+
+	final static private int SCAN_FROM = 1;
+	final static private int SCAN_TO = 512;
+	
+	private boolean useChannelMode = false;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -65,11 +79,16 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 		textChannel = (EditText) findViewById(R.id.editText1);
 		textChannelName = (TextView) findViewById(R.id.textView1);
 		textChannelValue = (TextView) findViewById(R.id.textView2);
-
-		textChannelSearch = (EditText) findViewById(R.id.editText2);
-
+		textChannelSearch = (EditText) findViewById(R.id.editTextScan);
+		buttonSetChannel = (Button) findViewById(R.id.buttonScanChannel);
+		
 		barChannelValue = (SeekBar) findViewById(R.id.seekBar1);
 		barChannelValue.setOnSeekBarChangeListener(this);
+		
+		radioButtonDMX = (RadioButton) findViewById(R.id.radioButtonDMX);
+		radioButtonControl = (RadioButton) findViewById(R.id.radioButtonControl);
+		
+		textChannelSearch.setKeyListener(null);
 	}
 
 	@Override
@@ -80,26 +99,24 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 	}
 
 	public void onScanChannels(View view) {
+		InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
+	    imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
 
-		textChannelSearch.setText("");
-
-		Integer channelFrom = 1;
-		Integer channelTo = 100;
-		Integer[] channelsToScan = new Integer[channelTo - channelFrom];
-		for (int i = 0; i < channelTo - channelFrom; ++i) {
-			channelsToScan[i] = channelFrom + i;
+		textChannelSearch.append("\n---------------------------------");
+		textChannelSearch.append("\nSCANING " + (useChannelMode ? "Control-Channels" : "DMX-Channels"));
+		textChannelSearch.append("\n---------------------------------\n");
+		Integer[] channelsToScan = new Integer[SCAN_TO - SCAN_FROM + 1];
+		for (int i = 0; i <= SCAN_TO - SCAN_FROM; ++i) {
+			channelsToScan[i] = SCAN_FROM + i;
 		}
-
+		enableChannelControls(false);
 		new ScanChannelAsync().execute(channelsToScan);
-
-		// StringBuilder sb = new StringBuilder();
-		// for (int i = 0; i < 100; ++i) {
-		// sb.append(i + ": " + "\n");
-		// }
-		// textChannelSearch.setText(sb.toString());
 	}
 
 	public void onSetChannel(View view) {
+		InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
+	    imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
+	    
 		String ch = textChannel.getText().toString();
 		try {
 			Integer channel = Integer.parseInt(ch);
@@ -136,22 +153,24 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 	}
 
 	// AsyncTask
-	private class SetChannelAsync extends AsyncTask<Integer, String, String> {
+	private class SetChannelAsync extends AsyncTask<Integer, String, Channel> {
 
 		@Override
-		protected String doInBackground(Integer... channels) {
-			String result = "";
+		protected Channel doInBackground(Integer... channels) {
+			Channel result = null;
 			for (Integer channel : channels) {
-				result = Controller.setChannel(channel);
+				result = Controller.setChannel(channel, useChannelMode);
 			}
 			return result;
 		}
 
 		// onPostExecute displays the results of the AsyncTask.
 		@Override
-		protected void onPostExecute(String result) {
-			textChannelName.setText(result);
-			Log.v(LOG_TAG, "Finished setting channel: " + result);
+		protected void onPostExecute(Channel channelConfig) {
+			textChannelName.setText(channelConfig.getName());
+			barChannelValue.setProgress(channelConfig.getValue());
+			Log.v(LOG_TAG,
+					"Finished setting channel: " + channelConfig.getName());
 		}
 	}
 
@@ -162,7 +181,7 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 		protected String doInBackground(Integer... values) {
 			String result = "";
 			for (Integer value : values) {
-				result = Controller.setValue(value);
+				result = Controller.setValue(value, useChannelMode);
 			}
 			return result;
 		}
@@ -175,17 +194,20 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 	}
 
 	// AsyncTask
-	private class ScanChannelAsync extends AsyncTask<Integer, String, String> {
+	private class ScanChannelAsync extends AsyncTask<Integer, String, Channel> {
 
 		@Override
-		protected String doInBackground(Integer... channels) {
-			String result = "";
+		protected Channel doInBackground(Integer... channels) {
+			Channel channelConfig = null;
 			for (Integer channel : channels) {
-				result = Controller.setChannel(channel);
-				publishProgress(channel + ": " + result);
+				channelConfig = Controller.setChannel(channel, useChannelMode);
+				if (!StringUtils.isEmpty(channelConfig.getName())) {
+					publishProgress(channel + ": " + channelConfig.getName()
+							+ " val = " + channelConfig.getValue());
+				}
 
 			}
-			return result;
+			return channelConfig;
 		}
 
 		protected void onProgressUpdate(String... values) {
@@ -194,9 +216,37 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 
 		// onPostExecute displays the results of the AsyncTask.
 		@Override
-		protected void onPostExecute(String result) {
+		protected void onPostExecute(Channel result) {
+			enableChannelControls(true);
 			Log.v(LOG_TAG, "Finished setting value");
 		}
+	}
+
+	public void onSelectChannelTypeClicked(View view) {
+	    // Is the button now checked?
+	    boolean checked = ((RadioButton) view).isChecked();
+	    
+	    // Check which radio button was clicked
+	    switch(view.getId()) {
+	        case R.id.radioButtonDMX:
+	            if (checked) {
+	            	useChannelMode = false;
+	            }	
+	            break;
+	        case R.id.radioButtonControl:
+	            if (checked) {
+	            	useChannelMode = true;
+	            }
+	            break;
+	    }
+	}
+	
+	private void enableChannelControls(boolean enabled) {
+		textChannel.setEnabled(enabled);
+		buttonSetChannel.setEnabled(enabled);
+		barChannelValue.setEnabled(enabled);
+		radioButtonDMX.setEnabled(enabled);
+		radioButtonControl.setEnabled(enabled);
 	}
 
 }

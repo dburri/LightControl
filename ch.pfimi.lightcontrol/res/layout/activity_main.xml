@@ -23,18 +23,45 @@
             android:inputType="number" />
 
         <Button
-            android:id="@+id/button1"
+            android:id="@+id/buttonScanChannel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:onClick="onSetChannel"
-            android:text="@string/submit" />
+            android:text="@string/button_set_channel" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <RadioGroup
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal" >
+
+        <RadioButton
+            android:id="@+id/radioButtonDMX"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:onClick="onSelectChannelTypeClicked"
+            android:text="@string/channel_dmx" />
+
+        <RadioButton
+            android:id="@+id/radioButtonControl"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onSelectChannelTypeClicked"
+            android:text="@string/channel_control" />
+</RadioGroup>
+
     </LinearLayout>
 
     <TextView
         android:id="@+id/textView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Medium Text"
+        android:text="@string/channel_description"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <SeekBar
@@ -47,7 +74,7 @@
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="TextView" />
+        android:text="@string/channel_value" />
 
     <ProgressBar
         android:id="@+id/progressBar1"
@@ -56,13 +83,15 @@
         android:layout_height="wrap_content" />
 
     <EditText
-        android:id="@+id/editText2"
+        android:id="@+id/editTextScan"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="0.79"
+        android:layout_height="0dip"
+        android:layout_weight="0.3"
         android:ems="10"
+        android:enabled="true"
         android:inputType="textMultiLine"
-        android:scrollbars="vertical" >
+        android:scrollbars="vertical"
+        android:textSize="12sp" >
 
         <requestFocus />
     </EditText>
@@ -72,6 +101,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:onClick="onScanChannels"
-        android:text="Button" />
+        android:text="@string/button_channel_scan" />
 
 </LinearLayout>
