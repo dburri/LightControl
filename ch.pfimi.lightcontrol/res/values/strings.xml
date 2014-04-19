@@ -8,7 +8,15 @@
     <string name="ip_address">IP Address</string>
     <string name="test_connection">Test Connection</string>
     <string name="refresh_ip">Refresh IP</string>
-    <string name="channel_dmx">DMX-Channel</string><string name="channel_control">Control-Channel</string><string name="channel">Channel</string><string name="channel_value">Value: </string><string name="button_channel_scan">Scan Channels</string><string name="channel_description">No Channel</string>
+    <string name="channel_dmx">DMX-Channel</string>
+    <string name="channel_control">Control-Channel</string>
+    <string name="channel">Channel</string>
+    <string name="channel_value">Value: </string>
+    <string name="button_channel_scan">Scan Channels</string>
+    <string name="channel_description">No Channel</string>
     <string name="button_set_channel">Set</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="ctrl_channel_fragment_title">Control Channels</string>
+    <string name="dmx_channel_fragment_title">DMX Channels</string>
 
 </resources>
