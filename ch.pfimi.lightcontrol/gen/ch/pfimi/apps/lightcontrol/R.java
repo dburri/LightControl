@@ -17,20 +17,24 @@ public final class R {
         public static final int ic_launcher=0x7f020000;
     }
     public static final class id {
-        public static final int AvailableViewsList=0x7f08000c;
+        public static final int AvailableViewsList=0x7f080010;
         public static final int DebugLayout=0x7f080000;
-        public static final int LinearLayout1=0x7f08000b;
-        public static final int button2=0x7f08000a;
-        public static final int buttonScanChannel=0x7f080002;
-        public static final int editText1=0x7f080001;
-        public static final int editTextScan=0x7f080009;
-        public static final int menu_settings=0x7f08000d;
-        public static final int progressBar1=0x7f080008;
-        public static final int radioButtonControl=0x7f080004;
-        public static final int radioButtonDMX=0x7f080003;
-        public static final int seekBar1=0x7f080006;
-        public static final int textView1=0x7f080005;
-        public static final int textView2=0x7f080007;
+        public static final int LinearLayout1=0x7f080008;
+        public static final int button2=0x7f08000f;
+        public static final int buttonResetValue=0x7f080006;
+        public static final int buttonScanChannel=0x7f080004;
+        public static final int buttonSetFullValue=0x7f080007;
+        public static final int channelText=0x7f08000a;
+        public static final int editText1=0x7f080003;
+        public static final int editTextScan=0x7f08000e;
+        public static final int menu_settings=0x7f080011;
+        public static final int progressBar1=0x7f08000d;
+        public static final int radioButtonControl=0x7f080002;
+        public static final int radioButtonDMX=0x7f080001;
+        public static final int seekBar1=0x7f080005;
+        public static final int textView3=0x7f080009;
+        public static final int textView4=0x7f08000b;
+        public static final int valueText=0x7f08000c;
     }
     public static final class layout {
         public static final int activity_main=0x7f030000;
@@ -43,6 +47,8 @@ public final class R {
         public static final int app_name=0x7f050000;
         public static final int button_channel_scan=0x7f05000b;
         public static final int button_set_channel=0x7f05000d;
+        public static final int button_value_0=0x7f05000e;
+        public static final int button_value_255=0x7f05000f;
         public static final int channel=0x7f050009;
         public static final int channel_control=0x7f050008;
         public static final int channel_description=0x7f05000c;
@@ -54,6 +60,7 @@ public final class R {
         public static final int ping=0x7f050003;
         public static final int refresh_ip=0x7f050006;
         public static final int test_connection=0x7f050005;
+        public static final int value=0x7f050010;
     }
     public static final class style {
         /** 

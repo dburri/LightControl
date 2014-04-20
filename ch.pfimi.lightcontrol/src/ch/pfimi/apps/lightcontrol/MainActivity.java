@@ -27,13 +27,17 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 	private TextView textChannelValue;
 	private SeekBar barChannelValue = null;
 	private Button buttonSetChannel;
+	private Button buttonResetValue;
+	private Button buttonSetFullValue;
 	private RadioButton radioButtonDMX;
 	private RadioButton radioButtonControl;
 
-	final static private int SCAN_FROM = 1;
-	final static private int SCAN_TO = 512;
-	
-	private boolean useChannelMode = false;
+	final static private int DMX_SCAN_FROM = 1;
+	final static private int DMX_SCAN_TO = 512;
+	final static private int CONTROL_SCAN_FROM = 1;
+	final static private int CONTROL_SCAN_TO = 72;
+
+	private boolean useControlChannelMode = false;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -77,17 +81,20 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 		// listView.setOnItemClickListener(mMessageClickedHandler);
 
 		textChannel = (EditText) findViewById(R.id.editText1);
-		textChannelName = (TextView) findViewById(R.id.textView1);
-		textChannelValue = (TextView) findViewById(R.id.textView2);
+		textChannelName = (TextView) findViewById(R.id.channelText);
+		textChannelValue = (TextView) findViewById(R.id.valueText);
 		textChannelSearch = (EditText) findViewById(R.id.editTextScan);
+		
 		buttonSetChannel = (Button) findViewById(R.id.buttonScanChannel);
+		buttonResetValue = (Button) findViewById(R.id.buttonResetValue);
+		buttonSetFullValue = (Button) findViewById(R.id.buttonSetFullValue);
 		
 		barChannelValue = (SeekBar) findViewById(R.id.seekBar1);
 		barChannelValue.setOnSeekBarChangeListener(this);
-		
+
 		radioButtonDMX = (RadioButton) findViewById(R.id.radioButtonDMX);
 		radioButtonControl = (RadioButton) findViewById(R.id.radioButtonControl);
-		
+
 		textChannelSearch.setKeyListener(null);
 	}
 
@@ -98,25 +105,39 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 		return true;
 	}
 
+	/**
+	 * 
+	 * @param view
+	 */
 	public void onScanChannels(View view) {
 		InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
-	    imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
+		imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
 
+		int scanFrom = useControlChannelMode ? CONTROL_SCAN_FROM : DMX_SCAN_FROM;
+		int scanTo   = useControlChannelMode ? CONTROL_SCAN_TO : DMX_SCAN_TO;
+		
 		textChannelSearch.append("\n---------------------------------");
-		textChannelSearch.append("\nSCANING " + (useChannelMode ? "Control-Channels" : "DMX-Channels"));
+		textChannelSearch.append("\nSCANING " + (useControlChannelMode ? "Control-Channels" : "DMX-Channels"));
+		textChannelSearch.append("\nFROM CHANNEL " + scanFrom + " TO " + scanTo);
 		textChannelSearch.append("\n---------------------------------\n");
-		Integer[] channelsToScan = new Integer[SCAN_TO - SCAN_FROM + 1];
-		for (int i = 0; i <= SCAN_TO - SCAN_FROM; ++i) {
-			channelsToScan[i] = SCAN_FROM + i;
+		
+		
+		Integer[] channelsToScan = new Integer[scanTo - scanFrom + 1];
+		for (int i = 0; i <= scanTo - scanFrom; ++i) {
+			channelsToScan[i] = scanFrom + i;
 		}
 		enableChannelControls(false);
 		new ScanChannelAsync().execute(channelsToScan);
 	}
 
+	/**
+	 * 
+	 * @param view
+	 */
 	public void onSetChannel(View view) {
 		InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
-	    imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
-	    
+		imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
+
 		String ch = textChannel.getText().toString();
 		try {
 			Integer channel = Integer.parseInt(ch);
@@ -126,32 +147,68 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 		}
 	}
 
+	/**
+	 * 	
+	 */
 	@Override
 	public void onProgressChanged(SeekBar seekBar, int progress,
 			boolean fromUser) {
 		Log.v(LOG_TAG, "Value = " + progress);
-		textChannelValue.setText("Value: " + progress);
+		textChannelValue.setText(Integer.toString(progress));
 		setValue(progress);
 	}
 
+	/**
+	 * 	
+	 */
+	public void onSet255(View view) {
+		textChannelValue.setText("255");
+		barChannelValue.setProgress(255);
+		setValue(255);
+	}
+
+	/**
+	 * 	
+	 */
+	public void onSet0(View view) {
+		textChannelValue.setText("0");
+		barChannelValue.setProgress(0);
+		setValue(0);
+	}
+
+	/**
+	 * 	
+	 */
 	@Override
 	public void onStartTrackingTouch(SeekBar arg0) {
 		// TODO Auto-generated method stub
 	}
 
+	/**
+	 * 	
+	 */
 	@Override
 	public void onStopTrackingTouch(SeekBar arg0) {
 		// TODO Auto-generated method stub
 	}
 
+	/**
+	 * 	
+	 */
 	public void setChannel(Integer channel) {
 		new SetChannelAsync().execute(channel);
 	}
 
+	/**
+	 * 	
+	 */
 	public void setValue(Integer value) {
 		new SetValueAsync().execute(value);
 	}
 
+	/**
+	 * 	
+	 */
 	// AsyncTask
 	private class SetChannelAsync extends AsyncTask<Integer, String, Channel> {
 
@@ -159,7 +216,7 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 		protected Channel doInBackground(Integer... channels) {
 			Channel result = null;
 			for (Integer channel : channels) {
-				result = Controller.setChannel(channel, useChannelMode);
+				result = Controller.setChannel(channel, useControlChannelMode);
 			}
 			return result;
 		}
@@ -181,7 +238,7 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 		protected String doInBackground(Integer... values) {
 			String result = "";
 			for (Integer value : values) {
-				result = Controller.setValue(value, useChannelMode);
+				result = Controller.setValue(value, useControlChannelMode);
 			}
 			return result;
 		}
@@ -200,7 +257,7 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 		protected Channel doInBackground(Integer... channels) {
 			Channel channelConfig = null;
 			for (Integer channel : channels) {
-				channelConfig = Controller.setChannel(channel, useChannelMode);
+				channelConfig = Controller.setChannel(channel, useControlChannelMode);
 				if (!StringUtils.isEmpty(channelConfig.getName())) {
 					publishProgress(channel + ": " + channelConfig.getName()
 							+ " val = " + channelConfig.getValue());
@@ -223,30 +280,32 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 	}
 
 	public void onSelectChannelTypeClicked(View view) {
-	    // Is the button now checked?
-	    boolean checked = ((RadioButton) view).isChecked();
-	    
-	    // Check which radio button was clicked
-	    switch(view.getId()) {
-	        case R.id.radioButtonDMX:
-	            if (checked) {
-	            	useChannelMode = false;
-	            }	
-	            break;
-	        case R.id.radioButtonControl:
-	            if (checked) {
-	            	useChannelMode = true;
-	            }
-	            break;
-	    }
+		// Is the button now checked?
+		boolean checked = ((RadioButton) view).isChecked();
+
+		// Check which radio button was clicked
+		switch (view.getId()) {
+		case R.id.radioButtonDMX:
+			if (checked) {
+				useControlChannelMode = false;
+			}
+			break;
+		case R.id.radioButtonControl:
+			if (checked) {
+				useControlChannelMode = true;
+			}
+			break;
+		}
 	}
-	
+
 	private void enableChannelControls(boolean enabled) {
 		textChannel.setEnabled(enabled);
 		buttonSetChannel.setEnabled(enabled);
 		barChannelValue.setEnabled(enabled);
 		radioButtonDMX.setEnabled(enabled);
 		radioButtonControl.setEnabled(enabled);
+		buttonResetValue.setEnabled(enabled);
+		buttonSetFullValue.setEnabled(enabled);
 	}
 
 }

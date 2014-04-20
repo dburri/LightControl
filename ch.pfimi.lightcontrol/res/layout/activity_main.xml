@@ -7,37 +7,10 @@
     android:orientation="vertical"
     tools:context=".MainActivity" >
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <RadioGroup
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:gravity="left"
         android:orientation="horizontal" >
-
-        <EditText
-            android:id="@+id/editText1"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="0.84"
-            android:ems="10"
-            android:hint="@string/channel"
-            android:inputType="number" />
-
-        <Button
-            android:id="@+id/buttonScanChannel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="onSetChannel"
-            android:text="@string/button_set_channel" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
-
-        <RadioGroup
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal" >
 
         <RadioButton
             android:id="@+id/radioButtonDMX"
@@ -53,28 +26,96 @@
             android:layout_height="wrap_content"
             android:onClick="onSelectChannelTypeClicked"
             android:text="@string/channel_control" />
-</RadioGroup>
+    </RadioGroup>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="left"
+        android:orientation="horizontal" >
+
+        <EditText
+            android:id="@+id/editText1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.38"
+            android:ems="10"
+            android:hint="@string/channel"
+            android:inputType="number" />
+
+        <Button
+            android:id="@+id/buttonScanChannel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onSetChannel"
+            android:text="@string/button_set_channel" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical|center_horizontal"
+        android:orientation="horizontal" >
+
+        <SeekBar
+            android:id="@+id/seekBar1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="6.48"
+            android:max="255" />
+
+        <Button
+            android:id="@+id/buttonResetValue"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onSet0"
+            android:text="@string/button_value_0" />
+
+        <Button
+            android:id="@+id/buttonSetFullValue"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:onClick="onSet255"
+            android:text="@string/button_value_255" />
 
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/textView1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/channel_description"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
-
-    <SeekBar
-        android:id="@+id/seekBar1"
+    <LinearLayout
+        android:id="@+id/LinearLayout1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:max="255" />
+        android:orientation="horizontal" >
 
-    <TextView
-        android:id="@+id/textView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/channel_value" />
+        <TextView
+            android:id="@+id/textView3"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.84"
+            android:text="@string/channel" />
+
+        <TextView
+            android:id="@+id/channelText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.43"
+            android:text="@string/channel_description" />
+
+        <TextView
+            android:id="@+id/textView4"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.74"
+            android:text="@string/value" />
+
+        <TextView
+            android:id="@+id/valueText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+    </LinearLayout>
 
     <ProgressBar
         android:id="@+id/progressBar1"

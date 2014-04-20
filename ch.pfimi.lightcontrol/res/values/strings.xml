@@ -10,5 +10,8 @@
     <string name="refresh_ip">Refresh IP</string>
     <string name="channel_dmx">DMX-Channel</string><string name="channel_control">Control-Channel</string><string name="channel">Channel</string><string name="channel_value">Value: </string><string name="button_channel_scan">Scan Channels</string><string name="channel_description">No Channel</string>
     <string name="button_set_channel">Set</string>
+    <string name="button_value_0">0</string>
+    <string name="button_value_255">255</string>
+    <string name="value">Value</string>
 
 </resources>
