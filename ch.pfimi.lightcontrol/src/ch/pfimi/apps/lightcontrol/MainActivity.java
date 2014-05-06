@@ -21,10 +21,13 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 
 	private static final String LOG_TAG = "MainController";
 
+	private EditText editText2;
+	
 	private EditText textChannelSearch;
 	private EditText textChannel;
 	private TextView textChannelName;
 	private TextView textChannelValue;
+	private TextView textView1;
 	private SeekBar barChannelValue = null;
 	private Button buttonSetChannel;
 	private Button buttonResetValue;
@@ -37,7 +40,7 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 	final static private int CONTROL_SCAN_FROM = 1;
 	final static private int CONTROL_SCAN_TO = 72;
 
-	private boolean useControlChannelMode = false;
+	private boolean useControlChannelMode = true;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -80,10 +83,15 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 		//
 		// listView.setOnItemClickListener(mMessageClickedHandler);
 
+		
+		
 		textChannel = (EditText) findViewById(R.id.editText1);
 		textChannelName = (TextView) findViewById(R.id.channelText);
 		textChannelValue = (TextView) findViewById(R.id.valueText);
+		textView1 = (TextView) findViewById(R.id.textView1);
 		textChannelSearch = (EditText) findViewById(R.id.editTextScan);
+		
+		editText2 = (EditText) findViewById(R.id.editText2);
 		
 		buttonSetChannel = (Button) findViewById(R.id.buttonScanChannel);
 		buttonResetValue = (Button) findViewById(R.id.buttonResetValue);
@@ -96,6 +104,13 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 		radioButtonControl = (RadioButton) findViewById(R.id.radioButtonControl);
 
 		textChannelSearch.setKeyListener(null);
+		
+		updateState();
+	}
+	
+	public void onConnect(View view) {
+
+		Log.v(LOG_TAG, "connecting " + editText2.getText().toString());
 	}
 
 	@Override
@@ -141,9 +156,17 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 		String ch = textChannel.getText().toString();
 		try {
 			Integer channel = Integer.parseInt(ch);
-			Log.v(LOG_TAG, "channel = " + channel);
+			String name = editText2.getText().toString();
+			name = StringUtils.left(name, 40);
+			for(int i = name.length(); i < 40; ++i) {
+				name += " ";
+			}
+			Log.v(LOG_TAG, "channel = " + channel + ", name = " + name);
+			updateState();
+			setName(name);
 			setChannel(channel);
 		} catch (Exception e) {
+			Log.d(LOG_TAG, "Error: " + e.getMessage());
 		}
 	}
 
@@ -165,6 +188,15 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 		textChannelValue.setText("255");
 		barChannelValue.setProgress(255);
 		setValue(255);
+	}
+
+	/**
+	 * 	
+	 */
+	public void onSet127(View view) {
+		textChannelValue.setText("127");
+		barChannelValue.setProgress(127);
+		setValue(127);
 	}
 
 	/**
@@ -203,9 +235,21 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 	 * 	
 	 */
 	public void setValue(Integer value) {
+		Log.v(LOG_TAG, "Set new value: " + value);
 		new SetValueAsync().execute(value);
 	}
+	
+	/**
+	 * 	
+	 */
+	public void setName(String name) {
+		new SetNameAsync().execute(name);
+	}
 
+	public void updateState() {
+		new GetStateAsync().execute();
+	}
+	
 	/**
 	 * 	
 	 */
@@ -226,8 +270,7 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 		protected void onPostExecute(Channel channelConfig) {
 			textChannelName.setText(channelConfig.getName());
 			barChannelValue.setProgress(channelConfig.getValue());
-			Log.v(LOG_TAG,
-					"Finished setting channel: " + channelConfig.getName());
+			Log.v(LOG_TAG, "Finished setting channel: " + channelConfig.getName());
 		}
 	}
 
@@ -247,6 +290,48 @@ public class MainActivity extends Activity implements OnSeekBarChangeListener {
 		@Override
 		protected void onPostExecute(String result) {
 			Log.v(LOG_TAG, "Finished setting value");
+		}
+	}
+
+	// AsyncTask
+	private class SetNameAsync extends AsyncTask<String, String, String> {
+
+		@Override
+		protected String doInBackground(String... names) {
+			String result = "";
+			for (String name : names) {
+				result = Controller.setName(name);
+			}
+			return result;
+		}
+
+		// onPostExecute displays the results of the AsyncTask.
+		@Override
+		protected void onPostExecute(String result) {
+			Log.v(LOG_TAG, "Finished setting name");
+		}
+	}
+	// AsyncTask
+	private class GetStateAsync extends AsyncTask<Integer, Integer, Integer> {
+
+		@Override
+		protected Integer doInBackground(Integer... is) {
+			Integer result = -1;
+			//for (Integer i : is) {
+				result = Integer.valueOf(Controller.getState());
+			//}
+			return result;
+		}
+
+		// onPostExecute displays the results of the AsyncTask.
+		@Override
+		protected void onPostExecute(Integer state) {
+			Log.v(LOG_TAG, "Finished getting state = " + state);
+			if(state != null && state == 1) {
+				textView1.setText("ONLINE");
+			} else {
+				textView1.setText("OFFLINE");
+			}
 		}
 	}
 

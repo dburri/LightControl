@@ -7,25 +7,48 @@
     android:orientation="vertical"
     tools:context=".MainActivity" >
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <EditText
+            android:id="@+id/editText2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.33"
+            android:ems="10"
+            android:hint="name"
+            android:inputType="textPersonName" />
+
+        <TextView
+            android:id="@+id/textView1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/offline"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+    </LinearLayout>
+
     <RadioGroup
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal" >
 
         <RadioButton
-            android:id="@+id/radioButtonDMX"
+            android:id="@+id/radioButtonControl"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:checked="true"
             android:onClick="onSelectChannelTypeClicked"
-            android:text="@string/channel_dmx" />
+            android:text="@string/channel_control" />
 
         <RadioButton
-            android:id="@+id/radioButtonControl"
+            android:id="@+id/radioButtonDMX"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:checked="false"
             android:onClick="onSelectChannelTypeClicked"
-            android:text="@string/channel_control" />
+            android:text="@string/channel_dmx" />
+
     </RadioGroup>
 
     <LinearLayout
@@ -47,38 +70,9 @@
             android:id="@+id/buttonScanChannel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_weight="0.12"
             android:onClick="onSetChannel"
             android:text="@string/button_set_channel" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical|center_horizontal"
-        android:orientation="horizontal" >
-
-        <SeekBar
-            android:id="@+id/seekBar1"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="6.48"
-            android:max="255" />
-
-        <Button
-            android:id="@+id/buttonResetValue"
-            style="?android:attr/buttonStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="onSet0"
-            android:text="@string/button_value_0" />
-
-        <Button
-            android:id="@+id/buttonSetFullValue"
-            style="?android:attr/buttonStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="onSet255"
-            android:text="@string/button_value_255" />
 
     </LinearLayout>
 
@@ -114,6 +108,53 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical|center_horizontal"
+        android:orientation="horizontal" >
+
+        <SeekBar
+            android:id="@+id/seekBar1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="6.48"
+            android:max="255" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" >
+
+        <Button
+            android:id="@+id/buttonResetValue"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.48"
+            android:onClick="onSet0"
+            android:text="@string/button_value_0" />
+
+        <Button
+            android:id="@+id/button1"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.44"
+            android:onClick="onSet127"
+            android:text="@string/button_value_127" />
+
+        <Button
+            android:id="@+id/buttonSetFullValue"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.50"
+            android:onClick="onSet255"
+            android:text="@string/button_value_255" />
 
     </LinearLayout>
 

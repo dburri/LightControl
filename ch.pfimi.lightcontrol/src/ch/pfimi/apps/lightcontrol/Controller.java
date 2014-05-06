@@ -13,6 +13,9 @@ public class Controller {
 
 	private static final String LOG_TAG = "ch.pfimi.apps.lightcontrol.Controller";
 
+	private static final int Ms_WS_SY_Name_in = 10;
+	private static final int Mi_WS_SY_enable = 4;
+	
 	private static final int Mi_WS_DC_Val_in = 100;
 	private static final int Mi_WS_DC_CH_in = 102;
 	// if CH_SPS equals CH_in the channel was properly set
@@ -140,4 +143,64 @@ public class Controller {
 		Log.d(LOG_TAG, "finished...");
 		return result;
 	}
+
+	static public String setName(String name) {
+
+		Log.d(LOG_TAG, "Set name " + name);
+		
+		String result = "";
+		TcAdsSOAP tcSoap = new TcAdsSOAP(SERVICE_URL);
+		try {
+
+			// GroupIndex
+			// 0x4020 = READ_M, WRITE_M, Offset = byteadresse
+			// 0x4021 = READ_MX, WRITE_MX, Offset = bitadresse
+
+			Log.d(LOG_TAG, "connect to: netId = " + NET_ID + ", port = " + PORT);
+
+			/* write byte */
+			if (tcSoap.WriteString(NET_ID, PORT, 0x4020, Ms_WS_SY_Name_in, name)) {
+				Log.d(LOG_TAG, "Name " + name + " Written");
+			} else {
+				StringWriter sw = new StringWriter();
+				PrintWriter pw = new PrintWriter(sw);
+				tcSoap.getError().printStackTrace(pw);
+				sw.toString();
+				Log.d(LOG_TAG, "Error: " + sw);
+			}
+
+		} catch (Exception ex) {
+			Log.d(LOG_TAG, String.valueOf(ex));
+			ex.printStackTrace();
+		}
+
+		Log.d(LOG_TAG, "finished...");
+		return result;
+	}
+
+	static public short getState() {
+
+		Log.d(LOG_TAG, "get state");
+		
+		short state = -1;
+		TcAdsSOAP tcSoap = new TcAdsSOAP(SERVICE_URL);
+		try {
+
+			// GroupIndex
+			// 0x4020 = READ_M, WRITE_M, Offset = byteadresse
+			// 0x4021 = READ_MX, WRITE_MX, Offset = bitadresse
+
+			Log.d(LOG_TAG, "connect to: netId = " + NET_ID + ", port = " + PORT);
+			state = tcSoap.ReadInt(NET_ID, PORT, 0x4020, Mi_WS_SY_enable);
+			Log.d(LOG_TAG, "finished reading state: " + state);
+
+		} catch (Exception ex) {
+			Log.d(LOG_TAG, String.valueOf(ex));
+			ex.printStackTrace();
+		}
+
+		Log.d(LOG_TAG, "finished...");
+		return state;
+	}
+	
 }
